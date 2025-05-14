@@ -140,6 +140,9 @@ export default {
           console.log('User data from response:', userData);
           localStorage.setItem('user', JSON.stringify(userData));
           
+          // Create a custom event to notify the app that login was successful
+          window.dispatchEvent(new Event('auth-changed'));
+          
           // Store remember me preference
           if (this.rememberMe) {
             localStorage.setItem('rememberMe', 'true');
@@ -158,12 +161,12 @@ export default {
           
           // Redirect based on user role
           if (userRole) {
-            switch(userRole) {
+            switch(userRole.toUpperCase()) {
               case 'CLIENT':
                 this.$router.push('/client/home');
                 break;
               case 'PROVIDER':
-                this.$router.push('/provider/dashboard');
+                this.$router.push('/provider/home');
                 break;
               case 'ADMIN':
                 this.$router.push('/admin/dashboard');
@@ -172,9 +175,16 @@ export default {
                 this.$router.push('/');
             }
           } else {
-            console.error('No user role found in response', data);
-            // Try to use client/home as default if we at least have a token
-            this.$router.push('/client/home');
+            // Check if we can determine role from other properties
+            if (userData && (userData.isProvider || (userData.user && userData.user.isProvider))) {
+              localStorage.setItem('userRole', 'provider');
+              this.$router.push('/provider/home');
+            } else {
+              console.error('No user role found in response', data);
+              // Try to use client/home as default if we at least have a token
+              localStorage.setItem('userRole', 'client');
+              this.$router.push('/client/home');
+            }
           }
         } else {
           console.error('No token found in response:', data);

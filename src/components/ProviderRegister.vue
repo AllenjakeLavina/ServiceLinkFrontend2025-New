@@ -8,13 +8,12 @@
 
     <div class="register-content">
       <div class="form-container">
-        <h2>Create Provider Account</h2>
-        <p class="subtitle">Join ServiceLink to grow your business</p>
+        <h2>Provider Registration</h2>
 
         <div v-if="registrationSuccess" class="success-message">
           <div v-if="verificationSuccess">
             <h3>Account Verified!</h3>
-            <p>Your account has been successfully verified.</p>
+            <p>Your account has been successfully verified. Your ID document will be reviewed by our administrators.</p>
             <router-link to="/login" class="login-btn">Go to Login</router-link>
           </div>
           <div v-else>
@@ -57,163 +56,20 @@
           </div>
         </div>
 
-        <div v-else>
-          <!-- Progress bar -->
-          <div class="progress-container">
-            <div class="progress-bar">
-              <div 
-                class="progress-fill"
-                :style="{ width: `${(currentStep / totalSteps) * 100}%` }"
-              ></div>
-            </div>
-            <div class="progress-steps">
-              <div 
-                v-for="step in totalSteps" 
-                :key="step" 
-                class="progress-step"
-                :class="{ 'active': step === currentStep, 'completed': step < currentStep }"
-              >
-                {{ step }}
-              </div>
-            </div>
-            <p class="step-description">Step {{ currentStep }}: {{ stepDescriptions[currentStep-1] }}</p>
+        <form v-else @submit.prevent="handleRegister" class="register-form" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input v-model="formData.email" type="email" id="email" required>
           </div>
           
-          <form @submit.prevent="handleStepSubmit" class="register-form">
-            <!-- Step 1: Personal Information -->
-            <div v-if="currentStep === 1">
-              <div class="section-title">Personal Information</div>
               <div class="form-group">
-                <input v-model="formData.firstName" type="text" required placeholder="First Name">
-                <input v-model="formData.lastName" type="text" required placeholder="Last Name">
-              </div>
-
-              <input v-model="formData.email" type="email" required placeholder="Email Address">
-              <input v-model="formData.phone" type="tel" required placeholder="Phone Number">
-            </div>
-            
-            <!-- Step 2: Business Information -->
-            <div v-if="currentStep === 2">
-              <div class="section-title">Business Information</div>
-              <input v-model="formData.businessName" type="text" required placeholder="Business Name">
-              <textarea v-model="formData.description" required placeholder="Describe your services (min 20 characters)" rows="3" minlength="20"></textarea>
-              
-              <div class="select-group">
-                <select v-model="formData.serviceCategory" required>
-                  <option value="" disabled selected>Select Service Category</option>
-                  <option value="HOME_CLEANING">Home Cleaning</option>
-                  <option value="PLUMBING">Plumbing</option>
-                  <option value="ELECTRICAL">Electrical</option>
-                  <option value="PAINTING">Painting</option>
-                  <option value="GARDENING">Gardening</option>
-                  <option value="CARPENTRY">Carpentry</option>
-                  <option value="APPLIANCE_REPAIR">Appliance Repair</option>
-                  <option value="ROOFING">Roofing</option>
-                  <option value="HVAC">HVAC</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <input v-model="formData.hourlyRate" type="number" min="0" step="0.01" required placeholder="Hourly Rate (PHP)">
-                <input v-model="formData.yearsExperience" type="number" min="0" step="1" required placeholder="Years of Experience">
-              </div>
-            </div>
-            
-            <!-- Step 3: Verification & Documents -->
-            <div v-if="currentStep === 3">
-              <div class="section-title">Verification Documents</div>
-              <p class="upload-instructions">Please upload documents that verify your identity and qualifications.</p>
-              
-              <div class="document-upload">
-                <label>Profile Photo</label>
-                <div 
-                  class="upload-area"
-                  @click="triggerFileInput('profilePhoto')"
-                  @dragover.prevent="handleDragOver"
-                  @drop.prevent="handleFileDrop($event, 'profilePhoto')"
-                >
-                  <div v-if="formData.profilePhotoPreview" class="preview-container">
-                    <img :src="formData.profilePhotoPreview" class="image-preview" />
-                    <button type="button" class="remove-image" @click.stop="removeImage('profilePhoto')">✕</button>
-                  </div>
-                  <div v-else class="upload-placeholder">
-                    <span class="upload-icon">📷</span>
-                    <span>Click or drag to upload photo</span>
-                  </div>
-                </div>
-                <input 
-                  type="file"
-                  ref="profilePhotoInput"
-                  @change="handleImageUpload($event, 'profilePhoto')"
-                  accept="image/jpeg, image/png, image/jpg"
-                  style="display: none"
-                />
-              </div>
-              
-              <div class="document-upload">
-                <label>ID/License</label>
-                <div 
-                  class="upload-area"
-                  @click="triggerFileInput('idLicense')"
-                  @dragover.prevent="handleDragOver"
-                  @drop.prevent="handleFileDrop($event, 'idLicense')"
-                >
-                  <div v-if="formData.idLicensePreview" class="preview-container">
-                    <img :src="formData.idLicensePreview" class="image-preview" />
-                    <button type="button" class="remove-image" @click.stop="removeImage('idLicense')">✕</button>
-                  </div>
-                  <div v-else class="upload-placeholder">
-                    <span class="upload-icon">🪪</span>
-                    <span>Click or drag to upload ID</span>
-                  </div>
-                </div>
-                <input 
-                  type="file"
-                  ref="idLicenseInput"
-                  @change="handleImageUpload($event, 'idLicense')"
-                  accept="image/jpeg, image/png, image/jpg"
-                  style="display: none"
-                />
-              </div>
-              
-              <div class="document-upload">
-                <label>Certification/Portfolio (optional)</label>
-                <div 
-                  class="upload-area"
-                  @click="triggerFileInput('certification')"
-                  @dragover.prevent="handleDragOver"
-                  @drop.prevent="handleFileDrop($event, 'certification')"
-                >
-                  <div v-if="formData.certificationPreview" class="preview-container">
-                    <img :src="formData.certificationPreview" class="image-preview" />
-                    <button type="button" class="remove-image" @click.stop="removeImage('certification')">✕</button>
-                  </div>
-                  <div v-else class="upload-placeholder">
-                    <span class="upload-icon">📄</span>
-                    <span>Click or drag to upload certification</span>
-                  </div>
-                </div>
-                <input 
-                  type="file"
-                  ref="certificationInput"
-                  @change="handleImageUpload($event, 'certification')"
-                  accept="image/jpeg, image/png, image/jpg, application/pdf"
-                  style="display: none"
-                />
-              </div>
-            </div>
-            
-            <!-- Step 4: Security -->
-            <div v-if="currentStep === 4">
-              <div class="section-title">Account Security</div>
+            <label for="password">Password:</label>
               <div class="password-field">
                 <input 
                   v-model="formData.password" 
                   :type="showPassword ? 'text' : 'password'" 
+                id="password"
                   required 
-                  placeholder="Password"
-                  minlength="8"
                 >
                 <span 
                   class="password-toggle" 
@@ -221,47 +77,46 @@
                 >
                   {{ showPassword ? '🙈' : '👁️' }}
                 </span>
+            </div>
               </div>
 
+          <div class="form-group">
+            <label for="firstName">First Name:</label>
+            <input v-model="formData.firstName" type="text" id="firstName" required>
+              </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name:</label>
+            <input v-model="formData.lastName" type="text" id="lastName" required>
+              </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input v-model="formData.phone" type="tel" id="phone">
+              </div>
+
+          <div class="form-group">
+            <label for="idDocument">ID Document (required for verification):</label>
               <input 
-                v-model="formData.confirmPassword" 
-                type="password" 
+              type="file" 
+              id="idDocument" 
+              ref="idDocumentInput"
+              @change="handleFileChange" 
+              class="file-input"
+              accept=".jpg,.jpeg,.png,.pdf"
                 required 
-                placeholder="Confirm Password"
-                minlength="8"
-              >
-
-              <div class="terms-checkbox">
-                <input type="checkbox" id="terms" v-model="formData.agreeToTerms" required>
-                <label for="terms">I agree to the Terms of Service and Privacy Policy</label>
-              </div>
+            >
+            <small>Please upload a government-issued ID document. This will be reviewed by our administrators.</small>
             </div>
 
             <div v-if="errorMessage" class="error-message">
               {{ errorMessage }}
             </div>
 
-            <div class="form-nav-buttons">
-              <button 
-                type="button" 
-                v-if="currentStep > 1"
-                @click="goToPreviousStep" 
-                class="secondary-btn"
-              >
-                Previous
+          <button type="submit" class="register-btn" :disabled="loading">
+            {{ loading ? 'Registering...' : 'Register' }}
               </button>
-              <button 
-                type="submit" 
-                :disabled="loading" 
-                class="register-btn"
-              >
-                <span v-if="loading">Loading...</span>
-                <span v-else-if="currentStep < totalSteps">Continue</span>
-                <span v-else>Create Provider Account</span>
-              </button>
-            </div>
           </form>
-        </div>
 
         <p class="login-link">
           Already have an account? 
@@ -277,40 +132,19 @@ export default {
   name: 'ProviderRegister',
   data() {
     return {
-      currentStep: 1,
-      totalSteps: 4,
-      stepDescriptions: [
-        'Personal Information',
-        'Business Details',
-        'Verification Documents',
-        'Account Security'
-      ],
       formData: {
+        email: '',
+        password: '',
         firstName: '',
         lastName: '',
-        email: '',
         phone: '',
-        businessName: '',
-        description: '',
-        serviceCategory: '',
-        hourlyRate: null,
-        yearsExperience: null,
-        password: '',
-        confirmPassword: '',
-        agreeToTerms: false,
-        profilePhoto: null,
-        profilePhotoPreview: null,
-        idLicense: null,
-        idLicensePreview: null,
-        certification: null,
-        certificationPreview: null
+        idDocument: null
       },
       showPassword: false,
       loading: false,
       errorMessage: '',
       registrationSuccess: false,
       apiBaseUrl: 'http://localhost:5500',
-      registeredUserId: '',
       registeredEmail: '',
       verificationCode: '',
       verifyLoading: false,
@@ -321,207 +155,52 @@ export default {
       resendTimer: null
     }
   },
-  mounted() {
-    // Remove the health check to avoid 404 errors
-  },
   beforeUnmount() {
     if (this.resendTimer) {
       clearInterval(this.resendTimer);
     }
   },
   methods: {
-    handleStepSubmit() {
-      this.errorMessage = '';
-      
-      // Validate current step
-      if (!this.validateCurrentStep()) {
-        return;
-      }
-      
-      if (this.currentStep < this.totalSteps) {
-        // Move to next step if not on the last step
-        this.currentStep++;
-      } else {
-        // Submit the form if on the last step
-        this.handleRegister();
-      }
-      
-      // Scroll to top of form
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    
-    goToPreviousStep() {
-      if (this.currentStep > 1) {
-        this.currentStep--;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    },
-    
-    validateCurrentStep() {
-      // Step 1: Personal Information
-      if (this.currentStep === 1) {
-        if (!this.formData.firstName) {
-          this.errorMessage = 'First name is required';
-          return false;
-        }
-        if (!this.formData.lastName) {
-          this.errorMessage = 'Last name is required';
-          return false;
-        }
-        if (!this.formData.email) {
-          this.errorMessage = 'Email is required';
-          return false;
-        }
-        if (!this.formData.phone) {
-          this.errorMessage = 'Phone number is required';
-          return false;
-        }
-      }
-      
-      // Step 2: Business Information
-      if (this.currentStep === 2) {
-        if (!this.formData.businessName) {
-          this.errorMessage = 'Business name is required';
-          return false;
-        }
-        if (!this.formData.description || this.formData.description.length < 20) {
-          this.errorMessage = 'Service description must be at least 20 characters long';
-          return false;
-        }
-        if (!this.formData.serviceCategory) {
-          this.errorMessage = 'Please select a service category';
-          return false;
-        }
-        if (!this.formData.hourlyRate) {
-          this.errorMessage = 'Hourly rate is required';
-          return false;
-        }
-        if (this.formData.yearsExperience === null || this.formData.yearsExperience === undefined) {
-          this.errorMessage = 'Years of experience is required';
-          return false;
-        }
-      }
-      
-      // Step 3: Verification Documents
-      if (this.currentStep === 3) {
-        if (!this.formData.profilePhoto) {
-          this.errorMessage = 'Profile photo is required';
-          return false;
-        }
-        if (!this.formData.idLicense) {
-          this.errorMessage = 'ID/License photo is required';
-          return false;
-        }
-        // Certification is optional
-      }
-      
-      // Step 4: Security
-      if (this.currentStep === 4) {
-        if (!this.formData.password) {
-          this.errorMessage = 'Password is required';
-          return false;
-        }
-        if (this.formData.password.length < 8) {
-          this.errorMessage = 'Password must be at least 8 characters long';
-          return false;
-        }
-        if (this.formData.password !== this.formData.confirmPassword) {
-          this.errorMessage = 'Passwords do not match';
-          return false;
-        }
-        if (!this.formData.agreeToTerms) {
-          this.errorMessage = 'You must agree to the Terms of Service';
-          return false;
-        }
-      }
-      
-      return true;
-    },
-    
-    triggerFileInput(type) {
-      this.$refs[`${type}Input`].click();
-    },
-    
-    handleDragOver(event) {
-      event.target.classList.add('drag-over');
-    },
-    
-    handleFileDrop(event, type) {
-      event.target.classList.remove('drag-over');
-      if (event.dataTransfer.files.length) {
-        const file = event.dataTransfer.files[0];
-        this.processFile(file, type);
-      }
-    },
-    
-    handleImageUpload(event, type) {
-      const file = event.target.files[0];
-      if (file) {
-        this.processFile(file, type);
-      }
-    },
-    
-    processFile(file, type) {
-      // Check file size (limit to 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'File is too large. Maximum size is 5MB.';
-        return;
-      }
-      
-      // Create a preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.formData[`${type}`] = file;
-        this.formData[`${type}Preview`] = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    },
-    
-    removeImage(type) {
-      this.formData[`${type}`] = null;
-      this.formData[`${type}Preview`] = null;
-      this.$refs[`${type}Input`].value = null;
+    handleFileChange(event) {
+      this.formData.idDocument = event.target.files[0];
     },
     
     async handleRegister() {
       this.loading = true;
+      this.errorMessage = '';
+      
+      // Validate form
+      if (!this.formData.email || !this.formData.password || !this.formData.firstName || 
+          !this.formData.lastName || !this.formData.idDocument) {
+        this.errorMessage = 'Please fill in all required fields.';
+        this.loading = false;
+        return;
+      }
       
       try {
-        // Debug the form data
-        console.log('Submitting registration with data:', {
+        const formData = new FormData();
+        formData.append('email', this.formData.email);
+        formData.append('password', this.formData.password);
+        formData.append('firstName', this.formData.firstName);
+        formData.append('lastName', this.formData.lastName);
+        if (this.formData.phone) {
+          formData.append('phone', this.formData.phone);
+        }
+        formData.append('idDocument', this.formData.idDocument);
+        
+        // Debug what's being sent
+        console.log('Submitting provider registration:', {
+          email: this.formData.email,
           firstName: this.formData.firstName,
           lastName: this.formData.lastName,
-          email: this.formData.email,
           phone: this.formData.phone,
-          password: this.formData.password,
-          businessName: this.formData.businessName,
-          description: this.formData.description,
-          serviceCategory: this.formData.serviceCategory,
-          hourlyRate: parseFloat(this.formData.hourlyRate),
-          yearsExperience: parseInt(this.formData.yearsExperience)
+          idDocument: this.formData.idDocument ? this.formData.idDocument.name : 'No file'
         });
 
-        // First submit basic info (without files) as JSON
         const response = await fetch(`${this.apiBaseUrl}/api/provider/register`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          mode: 'cors',
-          credentials: 'omit',
-          body: JSON.stringify({
-            firstName: this.formData.firstName,
-            lastName: this.formData.lastName,
-            email: this.formData.email,
-            phone: this.formData.phone,
-            password: this.formData.password,
-            businessName: this.formData.businessName,
-            description: this.formData.description,
-            serviceCategory: this.formData.serviceCategory,
-            hourlyRate: parseFloat(this.formData.hourlyRate),
-            yearsExperience: parseInt(this.formData.yearsExperience)
-          })
+          body: formData,
+          mode: 'cors'
         });
 
         // Try to parse response as JSON
@@ -536,32 +215,11 @@ export default {
         if (!response.ok) {
           throw new Error(data.message || 'Registration failed');
         }
-
-        // If initial registration succeeded, upload the images if needed
-        // Store user ID and email for verification
-        if (data.data && data.data.id) {
-          this.registeredUserId = data.data.id;
-          
-          // Upload profile photo if available
-          if (this.formData.profilePhoto) {
-            await this.uploadProviderDocument('profilePhoto', this.formData.profilePhoto, data.data.id);
-          }
-          
-          // Upload ID/License if available
-          if (this.formData.idLicense) {
-            await this.uploadProviderDocument('idLicense', this.formData.idLicense, data.data.id);
-          }
-          
-          // Upload certification if available
-          if (this.formData.certification) {
-            await this.uploadProviderDocument('certification', this.formData.certification, data.data.id);
-          }
-        }
         
         // Store email for verification
         this.registeredEmail = this.formData.email;
         
-        // Registration successful
+        // Registration successful, show verification code input
         this.registrationSuccess = true;
       } catch (error) {
         console.error('Registration error:', error);
@@ -573,29 +231,6 @@ export default {
         }
       } finally {
         this.loading = false;
-      }
-    },
-
-    // Helper method to upload provider documents
-    async uploadProviderDocument(documentType, file, providerId) {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('documentType', documentType);
-        formData.append('providerId', providerId);
-        
-        const uploadResponse = await fetch(`${this.apiBaseUrl}/api/provider/document-upload`, {
-          method: 'POST',
-          body: formData,
-          mode: 'cors',
-          credentials: 'omit'
-        });
-        
-        if (!uploadResponse.ok) {
-          console.error(`Failed to upload ${documentType}`);
-        }
-      } catch (error) {
-        console.error(`Error uploading ${documentType}:`, error);
       }
     },
 
@@ -615,8 +250,6 @@ export default {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          mode: 'cors',
-          credentials: 'omit',
           body: JSON.stringify({
             email: this.registeredEmail,
             code: this.verificationCode
@@ -650,8 +283,6 @@ export default {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          mode: 'cors',
-          credentials: 'omit',
           body: JSON.stringify({
             email: this.registeredEmail
           })
@@ -732,78 +363,17 @@ export default {
 .form-container {
   background: white;
   padding: 3rem;
-  border-radius: 20px;
+  border-radius: 10px;
   width: 100%;
   max-width: 600px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 h2 {
-  color: #1a237e;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
   text-align: center;
-}
-
-.subtitle {
-  color: #666;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.progress-container {
-  margin-bottom: 2rem;
-}
-
-.progress-bar {
-  height: 8px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(to right, #1a237e, #0d47a1);
-  transition: width 0.3s ease;
-}
-
-.progress-steps {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.progress-step {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #e0e0e0;
-  color: #666;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.progress-step.active {
-  background-color: #1a237e;
-  color: white;
-  transform: scale(1.1);
-}
-
-.progress-step.completed {
-  background-color: #0d47a1;
-  color: white;
-}
-
-.step-description {
-  text-align: center;
-  color: #1a237e;
-  font-weight: 600;
-  margin-top: 0.5rem;
 }
 
 .register-form, .verify-form {
@@ -812,12 +382,61 @@ h2 {
   gap: 1rem;
 }
 
-.section-title {
-  color: #1a237e;
-  font-weight: 600;
-  margin-top: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: #1a237e;
+}
+
+.file-input {
+  border: none;
+  padding: 0;
+}
+
+small {
+  color: #666;
+  font-size: 0.85rem;
+  display: block;
+  margin-top: 5px;
+}
+
+.verification-code input {
+  font-size: 1.5rem;
+  letter-spacing: 4px;
+  text-align: center;
+  padding: 15px;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
 }
 
 .success-message {
@@ -826,7 +445,7 @@ h2 {
 }
 
 .success-message h3 {
-  color: #1a237e;
+  color: #4CAF50;
   margin-bottom: 1rem;
 }
 
@@ -836,184 +455,31 @@ h2 {
   padding: 0.75rem;
   border-radius: 4px;
   font-size: 0.9rem;
-  text-align: center;
-}
-
-.form-group {
-  display: flex;
-  gap: 1rem;
-}
-
-input, textarea, select {
-  padding: 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: #1a237e;
-  outline: none;
-}
-
-.select-group select {
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1em;
-}
-
-.verification-code input {
-  font-size: 1.5rem;
-  letter-spacing: 4px;
-  text-align: center;
-}
-
-.document-upload {
-  margin-bottom: 1.5rem;
-}
-
-.document-upload label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #455a64;
-  font-weight: 500;
-}
-
-.upload-instructions {
-  color: #666;
-  font-size: 0.9rem;
   margin-bottom: 1rem;
 }
 
-.upload-area {
-  border: 2px dashed #c5cae9;
-  border-radius: 8px;
-  padding: 2rem 1rem;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.3s ease;
-  background-color: #f5f5f5;
-}
-
-.upload-area:hover {
-  border-color: #1a237e;
-  background-color: #e8eaf6;
-}
-
-.upload-area.drag-over {
-  border-color: #1a237e;
-  background-color: #e8eaf6;
-}
-
-.upload-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: #666;
-}
-
-.upload-icon {
-  font-size: 2rem;
-}
-
-.preview-container {
-  position: relative;
-}
-
-.image-preview {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 4px;
-}
-
-.remove-image {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #c62828;
+.register-btn, .login-btn, .verify-btn {
+  background: #4CAF50;
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  font-size: 0.8rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 12px 15px;
   cursor: pointer;
-}
-
-.password-field {
-  position: relative;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  user-select: none;
-}
-
-.terms-checkbox {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.terms-checkbox input {
-  width: auto;
-  margin-top: 0.25rem;
-}
-
-.form-nav-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.register-btn, .login-btn, .verify-btn, .secondary-btn {
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
+  border-radius: 4px;
+  font-size: 1rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  width: 100%;
+  transition: background-color 0.3s ease;
   text-align: center;
   text-decoration: none;
   display: block;
 }
 
-.register-btn, .login-btn, .verify-btn {
-  background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
-  color: white;
-  flex-grow: 1;
-}
-
-.secondary-btn {
-  background-color: #e0e0e0;
-  color: #455a64;
-}
-
 .register-btn:hover, .login-btn:hover, .verify-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
-}
-
-.secondary-btn:hover {
-  background-color: #d5d5d5;
+  background: #45a049;
 }
 
 .register-btn:disabled, .verify-btn:disabled {
-  background: #ccc;
+  background: #cccccc;
   cursor: not-allowed;
 }
 
@@ -1037,6 +503,7 @@ input:focus, textarea:focus, select:focus {
   margin-top: 1.5rem;
   font-size: 0.9rem;
   color: #666;
+  text-align: center;
 }
 
 .resend-btn {
@@ -1060,12 +527,9 @@ input:focus, textarea:focus, select:focus {
     padding: 2rem;
   }
 
-  .form-group {
-    flex-direction: column;
-  }
-
   h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 }
 </style>
+

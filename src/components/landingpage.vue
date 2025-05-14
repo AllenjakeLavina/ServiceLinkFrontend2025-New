@@ -8,9 +8,6 @@
         </div>
         <div class="nav-links">
           <a href="#features">Features</a>
-          <a href="#services">Services</a>
-          <a href="#about">About</a>
-          <a href="#contact">Contact</a>
           <router-link to="/login" class="login-btn">Login</router-link>
         </div>
       </nav>

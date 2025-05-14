@@ -1,13 +1,13 @@
 <template>
-  <div class="client-home">
-    <h1>Client Homepage</h1>
-    <p>This is the client homepage component.</p>
+  <div class="provider-services">
+    <h1>Provider Services</h1>
+    <p>This is the provider services component.</p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'ClientHomePage',
+  name: 'ProviderServices',
   data() {
     return {
       user: {
@@ -38,8 +38,8 @@ export default {
 </script>
 
 <style scoped>
-.client-home {
+.provider-services {
   padding: 20px;
   margin-top: 70px;
 }
-</style>
+</style> 
