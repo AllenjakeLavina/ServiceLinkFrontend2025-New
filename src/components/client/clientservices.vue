@@ -40,7 +40,7 @@ export default {
 <style scoped>
 .services-container {
   padding: 20px;
-  margin-top: 70px;
+  margin-top: 130px;
 }
 </style>
 
