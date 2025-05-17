@@ -40,6 +40,6 @@ export default {
 <style scoped>
 .client-home {
   padding: 20px;
-  margin-top: 70px;
+  margin-top: 100px;
 }
 </style>
