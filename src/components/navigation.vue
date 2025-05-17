@@ -1,110 +1,92 @@
 <template>
   <nav v-if="shouldShowNavbar" class="navbar">
     <div class="container">
-      <!-- Logo - aligned left -->
-      <div class="left-section">
-        <router-link :to="homeRoute" class="logo-container">
-          <img src="../assets/logo.png" alt="ServiceLink Logo" class="logo" />
-        </router-link>
+      <!-- Logo - only visible on desktop -->
+      <router-link :to="homeRoute" class="logo-container desktop-only">
+        <img src="../assets/logo.png" alt="ServiceLink Logo" class="logo" />
+      </router-link>
+
+      <!-- Desktop Navigation Links -->
+      <div class="nav-links desktop-only">
+        <!-- Client Navigation -->
+        <template v-if="userRole === 'client'">
+          <router-link to="/client/home">
+            <i class="nav-icon">🏠</i>
+            <span>Home</span>
+          </router-link>
+          <router-link to="/client/booking">
+            <i class="nav-icon">📅</i>
+            <span>My Bookings</span>
+          </router-link>
+          <router-link to="/client/services">
+            <i class="nav-icon">🛠️</i>
+            <span>Services</span>
+          </router-link>
+          <router-link to="/client/messages">
+            <i class="nav-icon">💬</i>
+            <span>Messages</span>
+          </router-link>
+        </template>
+
+        <!-- Provider Navigation -->
+        <template v-else-if="userRole === 'provider'">
+          <router-link to="/provider/home">
+            <i class="nav-icon">📊</i>
+            <span>Dashboard</span>
+          </router-link>
+          <router-link to="/provider/services">
+            <i class="nav-icon">🛠️</i>
+            <span>My Services</span>
+          </router-link>
+        </template>
       </div>
 
-      <!-- Right-aligned navigation and user actions -->
-      <div class="right-section">
-        <!-- Desktop Navigation Links -->
-        <div class="nav-links desktop-only">
-          <!-- Client Navigation -->
-          <template v-if="userRole === 'client'">
-            <router-link to="/client/home">
-              <i class="nav-icon">🏠</i>
-              <span>Home</span>
-            </router-link>
-            <router-link to="/client/booking">
-              <i class="nav-icon">📅</i>
-              <span>My Bookings</span>
-            </router-link>
-            <router-link to="/client/services">
-              <i class="nav-icon">🛠️</i>
-              <span>Services</span>
-            </router-link>
-            <router-link to="/client/messages">
-              <i class="nav-icon">💬</i>
-              <span>Messages</span>
-            </router-link>
-          </template>
-
-          <!-- Provider Navigation -->
-          <template v-else-if="userRole === 'provider'">
-            <router-link to="/provider/home">
-              <i class="nav-icon">📊</i>
-              <span>Dashboard</span>
-            </router-link>
-            <router-link to="/provider/services">
-              <i class="nav-icon">🛠️</i>
-              <span>My Services</span>
-            </router-link>
-          </template>
-          
-          <!-- Admin Navigation -->
-          <template v-else-if="userRole === 'admin'">
-            <router-link to="/admin/dashboard">
-              <i class="nav-icon">📊</i>
-              <span>Dashboard</span>
-            </router-link>
-          </template>
-        </div>
-
-        <!-- User Actions - Desktop -->
-        <div class="user-actions desktop-only">
-          <!-- Notifications -->
-          <div class="notifications-dropdown">
-            <button class="notifications-btn" @click="toggleDropdown('notifications')">
-              <i class="notification-icon">🔔</i>
-              <span v-if="notifications.length > 0" class="badge">{{ notifications.length }}</span>
-            </button>
-            <div class="dropdown-content" v-show="activeDropdown === 'notifications'">
-              <div v-if="notifications.length === 0" class="empty-state">
-                No new notifications
-              </div>
-              <div v-else class="notification-list">
-                <div v-for="notification in notifications" :key="notification.id" class="notification-item">
-                  <div class="notification-icon" :class="notification.type">
-                    <i v-if="notification.type === 'booking'">📅</i>
-                    <i v-else-if="notification.type === 'message'">💬</i>
-                    <i v-else>📢</i>
-                  </div>
-                  <div class="notification-content">
-                    <div class="notification-text">{{ notification.message }}</div>
-                    <div class="notification-time">{{ formatNotificationTime(notification.createdAt) }}</div>
-                  </div>
+      <!-- User Actions - Desktop -->
+      <div class="user-actions desktop-only">
+        <!-- Notifications -->
+        <div class="notifications-dropdown">
+          <button class="notifications-btn" @click="toggleDropdown('notifications')">
+            <i class="notification-icon">🔔</i>
+            <span v-if="notifications.length > 0" class="badge">{{ notifications.length }}</span>
+          </button>
+          <div class="dropdown-content" v-show="activeDropdown === 'notifications'">
+            <div v-if="notifications.length === 0" class="empty-state">
+              No new notifications
+            </div>
+            <div v-else class="notification-list">
+              <div v-for="notification in notifications" :key="notification.id" class="notification-item">
+                <div class="notification-icon" :class="notification.type">
+                  <i v-if="notification.type === 'booking'">📅</i>
+                  <i v-else-if="notification.type === 'message'">💬</i>
+                  <i v-else>📢</i>
+                </div>
+                <div class="notification-content">
+                  <div class="notification-text">{{ notification.message }}</div>
+                  <div class="notification-time">{{ formatNotificationTime(notification.createdAt) }}</div>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- User Profile Dropdown -->
-          <div class="profile-dropdown">
-            <button class="profile-btn" @click="toggleDropdown('profile')">
-              <img :src="user.profilePicture || '../assets/avatar-placeholder.png'" alt="User" class="avatar" />
-              <span class="user-name">{{ user.firstName || 'User' }}</span>
-              <span class="dropdown-arrow">▼</span>
-            </button>
-            <div class="dropdown-content" v-show="activeDropdown === 'profile'">
-              <router-link :to="profileRoute" @click="activeDropdown = null">
-                <i class="dropdown-icon">👤</i> My Profile
-              </router-link>
-              <router-link to="/settings" @click="activeDropdown = null">
-                <i class="dropdown-icon">⚙️</i> Settings
-              </router-link>
-              <a @click="logout" href="#" class="logout-btn">
-                <i class="dropdown-icon">🚪</i> Logout
-              </a>
-            </div>
-          </div>
         </div>
-        
-        <!-- Mobile Profile Button (visible only on mobile) -->
-        <div class="mobile-profile-button" @click.stop="toggleProfileMenu">
-          <img :src="user.profilePicture || '../assets/avatar-placeholder.png'" alt="User" class="avatar" />
+
+        <!-- User Profile Dropdown -->
+        <div class="profile-dropdown">
+          <button class="profile-btn" @click="toggleDropdown('profile')">
+            <img :src="user.profilePicture || '../assets/avatar-placeholder.png'" alt="User" class="avatar" />
+            <span class="user-name">{{ user.firstName || 'User' }}</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="dropdown-content" v-show="activeDropdown === 'profile'">
+            <router-link :to="profileRoute" @click="activeDropdown = null">
+              <i class="dropdown-icon">👤</i> My Profile
+            </router-link>
+            <router-link to="/settings" @click="activeDropdown = null">
+              <i class="dropdown-icon">⚙️</i> Settings
+            </router-link>
+            <a @click="logout" href="#" class="logout-btn">
+              <i class="dropdown-icon">🚪</i> Logout
+            </a>
+          </div>
         </div>
       </div>
 
@@ -128,6 +110,10 @@
             <i class="nav-icon">💬</i>
             <span>Messages</span>
           </router-link>
+          <div class="mobile-nav-item" @click="toggleProfileMenu">
+            <i class="nav-icon">👤</i>
+            <span>Profile</span>
+          </div>
         </template>
 
         <!-- Provider Navigation -->
@@ -140,14 +126,10 @@
             <i class="nav-icon">🛠️</i>
             <span>Services</span>
           </router-link>
-        </template>
-        
-        <!-- Admin Navigation -->
-        <template v-else-if="userRole === 'admin'">
-          <router-link to="/admin/dashboard" class="mobile-nav-item">
-            <i class="nav-icon">📊</i>
-            <span>Dashboard</span>
-          </router-link>
+          <div class="mobile-nav-item" @click="toggleProfileMenu">
+            <i class="nav-icon">👤</i>
+            <span>Profile</span>
+          </div>
         </template>
       </div>
 
@@ -236,8 +218,6 @@ export default {
           return '/client/home';
         case 'provider':
           return '/provider/home';
-        case 'admin':
-          return '/admin/dashboard';
         default:
           return '/';
       }
@@ -248,8 +228,6 @@ export default {
           return '/client/profile';
         case 'provider':
           return '/provider/profile';
-        case 'admin':
-          return '/admin/dashboard';
         default:
           return '/profile';
       }
@@ -431,93 +409,75 @@ export default {
 <style scoped>
 /* Main navbar styling */
 .navbar {
-  background: linear-gradient(135deg, #2bad61 0%, #0fdd7d 100%);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   position: fixed;
   width: 100%;
   top: 0;
   left: 0;
-  padding: 0; /* Remove padding to allow elements to touch edges */
-  height: 110px; /* Increased height from 80px to 90px */
 }
 
 .container {
-  width: 100%;
-  margin: 0;
-  padding: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.6rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
-}
-
-/* Left section for logo - positioned at extreme left */
-.left-section {
-  display: flex;
-  align-items: center;
-  padding-left: 20px; /* Add padding inside the container instead */
-  height: 100%;
-}
-
-/* Right section for navigation and user actions - positioned at extreme right */
-.right-section {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  padding-right: 20px; /* Add padding inside the container instead */
-  height: 100%;
 }
 
 /* Logo styling */
 .logo-container {
   display: flex;
   align-items: center;
-  height: 100%;
-  padding: 10px 0;
 }
 
 .logo {
-  height: 95px; /* Increased from 60px to 70px */
+  height: 50px;
   width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* Desktop Navigation Links */
 .nav-links {
   display: flex;
-  gap: 2.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: white;
-  font-weight: 600;
-  font-size: 1.05rem;
+  color: #4a5568;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   position: relative;
-  padding: 0.6rem 1rem;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+  padding: 0.5rem 0;
+  transition: color 0.2s ease;
 }
 
 .nav-links a.router-link-active {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-weight: 700;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  color: #2bad61;
+}
+
+.nav-links a.router-link-active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.25rem;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #2bad61;
+  border-radius: 2px;
 }
 
 .nav-links a:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  color: #2bad61;
 }
 
 .nav-icon {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
 /* User Actions Section */
@@ -533,22 +493,21 @@ export default {
 }
 
 .notifications-btn {
-  background: rgba(255, 255, 255, 0.15);
+  background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   transition: background-color 0.2s ease;
 }
 
 .notifications-btn:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+  background-color: #f3f4f6;
 }
 
 .badge {
@@ -557,15 +516,14 @@ export default {
   right: -5px;
   background-color: #ef4444;
   color: white;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: bold;
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  height: 18px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 /* Profile Dropdown Styling */
@@ -577,49 +535,46 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem 0.95rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 50px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .profile-btn:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+  background-color: #f3f4f6;
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e5e7eb;
 }
 
 .user-name {
-  font-weight: 600;
-  color: white;
-  font-size: 1.05rem;
+  font-weight: 500;
+  color: #4a5568;
 }
 
 .dropdown-arrow {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.7rem;
+  color: #9ca3af;
 }
 
 /* Dropdown Content Styling */
 .dropdown-content {
   position: absolute;
   right: 0;
-  top: calc(100% + 10px);
-  min-width: 260px;
+  top: calc(100% + 8px);
+  min-width: 220px;
   background-color: white;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  padding: 0.6rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
   z-index: 1000;
   transform-origin: top right;
   animation: dropdown-appear 0.2s ease;
@@ -639,13 +594,12 @@ export default {
 .dropdown-content a, 
 .mobile-profile-links a {
   display: flex;
-  padding: 0.85rem 1.2rem;
+  padding: 0.75rem 1rem;
   text-decoration: none;
   color: #4a5568;
   font-weight: 500;
-  font-size: 1.05rem;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   align-items: center;
   gap: 0.75rem;
 }
@@ -653,12 +607,11 @@ export default {
 .dropdown-content a:hover,
 .mobile-profile-links a:hover {
   background-color: #f3f4f6;
-  color: #1a237e;
-  transform: translateY(-1px);
+  color: #2bad61;
 }
 
 .dropdown-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .logout-btn {
@@ -671,17 +624,17 @@ export default {
 
 /* Notification dropdown specific styles */
 .notifications-dropdown .dropdown-content {
-  width: 340px;
+  width: 300px;
   padding: 0;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .empty-state {
-  padding: 1.75rem;
+  padding: 1.5rem;
   text-align: center;
   color: #9ca3af;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
 }
 
 .notification-list {
@@ -707,14 +660,14 @@ export default {
 
 .notification-icon {
   margin-right: 0.75rem;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background-color: #f3f4f6;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
 }
 
@@ -734,13 +687,13 @@ export default {
 
 .notification-text {
   margin-bottom: 0.25rem;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #374151;
   line-height: 1.4;
 }
 
 .notification-time {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #9ca3af;
 }
 
@@ -751,10 +704,10 @@ export default {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(to right, #2bad61 0%, #0fdd7d 100%);
-  padding: 0.85rem 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 0.75rem 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
   z-index: 1000;
   justify-content: space-around;
 }
@@ -765,30 +718,28 @@ export default {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.85);
-  gap: 0.3rem;
+  color: #6b7280;
+  gap: 0.25rem;
   flex: 1;
-  padding: 0.4rem 0;
+  padding: 0.35rem 0;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
 
 .mobile-nav-item.router-link-active {
-  color: white;
-  background-color: rgba(255, 255, 255, 0.15);
-  font-weight: 600;
+  color: #2bad61;
 }
 
 .mobile-nav-item:active {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #f3f4f6;
 }
 
 .mobile-nav-item i {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
 }
 
 .mobile-nav-item span {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 500;
 }
 
@@ -820,7 +771,6 @@ export default {
   max-height: 90vh;
   overflow-y: auto;
   animation: slide-up 0.3s ease;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes slide-up {
@@ -830,22 +780,17 @@ export default {
 
 .mobile-profile-header {
   display: flex;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-bottom: 1px solid #f3f4f6;
   position: relative;
-  background: linear-gradient(135deg, #2bad61 0%, #0fdd7d 100%);
-  color: white;
-  border-radius: 16px 16px 0 0;
 }
 
 .mobile-avatar {
-  width: 55px;
-  height: 55px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
   margin-right: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .mobile-user-info {
@@ -854,27 +799,26 @@ export default {
 
 .mobile-user-name {
   font-weight: 600;
-  color: white;
+  color: #111827;
   margin-bottom: 0.25rem;
-  font-size: 1.2rem;
 }
 
 .mobile-user-email {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  color: #6b7280;
 }
 
 .mobile-close-btn {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: none;
   border: none;
   font-size: 1.25rem;
-  color: white;
+  color: #9ca3af;
   cursor: pointer;
-  width: 35px;
-  height: 35px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -883,17 +827,17 @@ export default {
 }
 
 .mobile-close-btn:hover {
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: #f3f4f6;
 }
 
 .mobile-profile-links {
-  padding: 0.9rem;
+  padding: 0.75rem;
 }
 
 .mobile-profile-links a,
 .mobile-notifications {
   display: flex;
-  padding: 1rem 1.2rem;
+  padding: 0.85rem 1rem;
   color: #4a5568;
   font-weight: 500;
   border-radius: 8px;
@@ -901,13 +845,7 @@ export default {
   transition: background-color 0.2s ease;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.05rem;
-}
-
-.mobile-profile-links a:hover,
-.mobile-notifications:hover {
-  background-color: #f3f4f6;
-  color: #1a237e;
+  font-size: 0.95rem;
 }
 
 .mobile-notifications {
@@ -918,46 +856,16 @@ export default {
 .mobile-badge {
   background-color: #ef4444;
   color: white;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: bold;
-  min-width: 20px;
-  height: 20px;
+  min-width: 18px;
+  height: 18px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: absolute;
   right: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-}
-
-/* Mobile Profile Button - Top Right */
-.mobile-profile-button {
-  display: none; /* Hidden by default, shown only on mobile */
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  padding: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 50px;
-  height: 50px;
-  min-width: 50px;
-  min-height: 50px;
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-
-.mobile-profile-button:active {
-  background-color: rgba(255, 255, 255, 0.4);
-  transform: scale(0.95);
-}
-
-.mobile-profile-button img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 /* Responsive Styles */
@@ -965,9 +873,7 @@ export default {
   .navbar {
     position: fixed;
     top: 0;
-    padding: 0.6rem 0;
-    background: linear-gradient(to right, #2bad61 0%, #0fdd7d 100%);
-    height: 85px; /* Added specific height for mobile */
+    padding: 0.5rem 0;
   }
   
   .desktop-only {
@@ -978,28 +884,14 @@ export default {
     display: flex;
   }
   
-  /* Show the mobile profile button in top right */
-  .mobile-profile-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto; /* Push to the far right */
-    z-index: 1010; /* Increase to ensure it's above everything */
-  }
-  
-  /* Make the logo smaller on mobile but still larger than before */
-  .logo {
-    height: 55px; /* Increased from 45px to 55px */
-  }
-  
   /* Add padding to the page content to account for bottom navbar */
   body {
-    padding-bottom: 75px;
+    padding-bottom: 70px;
   }
   
   /* Add padding to the top to account for potential small header */
   body {
-    padding-top: 15px;
+    padding-top: 10px;
   }
 }
 </style>

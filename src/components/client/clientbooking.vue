@@ -40,12 +40,7 @@ export default {
 <style scoped>
 .booking-container {
   padding: 20px;
-  margin-top: 130px;
-}
-
-.client-booking {
-  margin-top: 130px;
-  padding: 20px;
+  margin-top: 70px;
 }
 </style>
 

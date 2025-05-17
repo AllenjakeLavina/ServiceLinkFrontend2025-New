@@ -39,7 +39,7 @@ export default {
 
 <style scoped>
 .messages-container {
-  margin-top: 130px;
   padding: 20px;
+  margin-top: 70px;
 }
 </style>

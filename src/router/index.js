@@ -9,8 +9,6 @@ import ClientBooking from '../components/client/clientbooking.vue'
 import ClientServices from '../components/client/clientservices.vue'
 import ClientMessages from '../components/client/clientmessages.vue'
 import ProviderHomepage from '../components/provider/providerhomepage.vue'
-import ProviderProfile from '../components/provider/providerprofile.vue'
-import AdminDashboard from '../components/admin/AdminDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -84,23 +82,10 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'provider' }
     },
     {
-      path: '/provider/profile',
-      name: 'ProviderProfile',
-      component: ProviderProfile,
-      meta: { requiresAuth: true, role: 'provider' }
-    },
-    {
       path: '/provider/services',
       name: 'ProviderServices',
       component: () => import('../components/provider/providerservices.vue'),
       meta: { requiresAuth: true, role: 'provider' }
-    },
-    // Admin routes
-    {
-      path: '/admin/dashboard',
-      name: 'AdminDashboard',
-      component: AdminDashboard,
-      meta: { requiresAuth: true, role: 'admin' }
     },
     // Redirects
     {

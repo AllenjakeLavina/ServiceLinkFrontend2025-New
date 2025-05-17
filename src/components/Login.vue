@@ -91,11 +91,7 @@ export default {
       this.loginError = ''
       this.isLoading = true
 
-      // Removed hardcoded admin login to use real backend authentication
-
       try {
-        console.log(`Attempting login with: ${this.email}`);
-        
         const response = await fetch(`${this.apiBaseUrl}/api/login`, {
           method: 'POST',
           headers: {
@@ -183,9 +179,6 @@ export default {
             if (userData && (userData.isProvider || (userData.user && userData.user.isProvider))) {
               localStorage.setItem('userRole', 'provider');
               this.$router.push('/provider/home');
-            } else if (userData && (userData.isAdmin || (userData.user && userData.user.isAdmin))) {
-              localStorage.setItem('userRole', 'admin');
-              this.$router.push('/admin/dashboard');
             } else {
               console.error('No user role found in response', data);
               // Try to use client/home as default if we at least have a token
